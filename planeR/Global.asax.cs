@@ -41,14 +41,10 @@ namespace planeR
                             StreamReader rdr = new StreamReader(clientSockStream);
                             foreach (string line in helper.ReadLines(rdr))
                             {
-                                
-                                //writer.WriteLine(line);
-                                //System.Console.WriteLine(line);
                                 string[] response = line.Split(',');
                                 if (response.Length == 22)
                                 {
                                     blah = new planeInfo(response);
-                                    //System.Console.WriteLine(blah.ToString());
                                 }
                                 else
                                     continue;
@@ -62,13 +58,6 @@ namespace planeR
                                     clients.Clients.All.broadcastMessage(blah.hexIdent, null, null, blah.callSign);
                                 else
                                     continue;
-
-                                //foreach (string a in response)
-                                //{
-                                //    plane.messageType
-                                //    //System.Console.WriteLine(a);
-                                //}
-
                             }
 
                             tcpClient.Close();
