@@ -1,0 +1,121 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>PlaneR</title>
+    <style type="text/css">
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            height: 100%;
+        }
+
+        #floating-panel {
+            position: absolute;
+            top: 10px;
+            left: 25%;
+            z-index: 5;
+            background-color: #fff;
+            padding: 5px;
+            border: 1px solid #999;
+            text-align: center;
+            font-family: 'Roboto','sans-serif';
+            line-height: 30px;
+            padding-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script>
+
+        var map;
+        var markers = new Array();
+        var markersPath = new Array();
+
+        function initMap() {
+            var haightAshbury = { lat: 43.6704565949051, lng: -79.3845546245575 };
+
+            map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 8,
+                center: haightAshbury,
+                mapTypeId: google.maps.MapTypeId.TERRAIN
+            });
+        }
+
+        // Adds a marker to the map and push to the array.
+        function addMarker(location, id) {
+            var marker = markers[id];
+            var myLatlng = new google.maps.LatLng(location.lat, location.lng);
+
+            if (marker == undefined) {
+                var marker = new google.maps.Marker({
+                    position: location,
+                    map: map
+                });
+                var markerPath = new google.maps.Polyline({
+                    strokeColor: '#000000',
+                    strokeOpacity: 1.0,
+                    strokeWeight: 3,
+                    visible: true
+                })
+                markerPath.setMap(map);
+                var path = markerPath.getPath();
+                path.push(myLatlng);
+                markerPath.setPath(path);
+                markers[id] = marker;
+                markersPath[id] = markerPath;
+            }
+            else {
+                marker.setPosition(location);
+                var markerPath = markersPath[id];
+                var path = markerPath.getPath();
+                path.push(myLatlng);
+                markerPath.setPath(path);
+                markersPath[id] = markerPath;
+            }
+        }
+
+        function updateMarker(callsign, id) {
+            var marker = markers[id];
+            if (marker == undefined) {
+
+            }
+            else {
+                marker.setTitle(callsign);
+            }
+        }
+
+
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBpG_QIhaASBUX-oGxWvy96An8MoLX-iiY&signed_in=true&callback=initMap">
+    </script>
+    <script src="Scripts/jquery-1.10.2.min.js"></script>
+    <script src="Scripts/jquery.signalR-2.1.2.min.js"></script>
+    <script src="signalr/hubs"></script>
+    <script type="text/javascript">
+        $(function () {
+            initMap();
+            // Declare a proxy to reference the hub.
+            var chat = $.connection.planeHub;
+            // Create a function that the hub can call to broadcast messages.
+            chat.client.broadcastMessage = function (id, lat, lon, callsign) {
+                if (callsign == undefined || callsign == null) {
+                    var loc = { lat: parseFloat(lat), lng: parseFloat(lon) };
+                    addMarker(loc, id)
+                }
+                else { updateMarker(callsign, id);}
+            };
+            // Start the connection.
+            $.connection.hub.start().done(function () {
+
+            });
+        });
+    </script>
+
+
+</body>
+</html>
